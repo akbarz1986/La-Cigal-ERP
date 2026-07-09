@@ -53,7 +53,7 @@ async function submitPin() {
             loginOverlay.classList.remove('active');
             appShell.classList.remove('hidden');
             
-            loadRealServices(); // Initial POS load
+            loadRealServices(); // Initial POS load with real database connection
         } else {
             throw new Error(result.message);
         }
@@ -64,11 +64,7 @@ async function submitPin() {
 }
 
 // ==========================================
-// POS LOGIC
-// ==========================================
-
-    // ==========================================
-// REAL API DATA FETCHING
+// REAL API DATA FETCHING (POS)
 // ==========================================
 async function loadRealServices() {
     serviceItems.innerHTML = '<div style="padding: 20px; color: var(--text-muted);">Loading services from database...</div>';
@@ -110,16 +106,6 @@ async function loadRealServices() {
         serviceItems.innerHTML = '<div style="color: red; padding: 20px;">Failed to connect to database.</div>';
     }
 }
-    
-    serviceItems.innerHTML = "";
-    dummyServices.forEach(srv => {
-        const btn = document.createElement('button');
-        btn.className = 'service-btn';
-        btn.innerHTML = `<h4>${srv.Name}</h4><p>${srv.Price}</p>`;
-        btn.onclick = () => addToTicket(srv);
-        serviceItems.appendChild(btn);
-    });
-}
 
 function addToTicket(service) {
     currentTicket.push(service);
@@ -154,7 +140,7 @@ function renderTicket() {
 }
 
 // ==========================================
-// CUSTOMERS & BOOKINGS LOGIC
+// CUSTOMERS & BOOKINGS LOGIC (UI Placeholders)
 // ==========================================
 function loadDummyCustomers() {
     const clients = [
