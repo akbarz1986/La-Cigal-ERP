@@ -15,7 +15,6 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-    // Only cache GET requests (API POSTs bypass cache)
     if (e.request.method !== 'GET') return;
     
     e.respondWith(
