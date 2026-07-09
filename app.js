@@ -121,3 +121,32 @@ function renderTicket() {
     // Update summary
     document.querySelector('.summary-row.total span:last-child').textContent = `Rs ${total}`;
 }
+
+// ==========================================
+// NAVIGATION & TAB SWITCHING LOGIC
+// ==========================================
+
+const navButtons = document.querySelectorAll('.nav-btn[data-target]');
+const viewSections = document.querySelectorAll('.view-section');
+
+navButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // 1. Remove the gold 'active' styling from all buttons
+        navButtons.forEach(b => b.classList.remove('active'));
+        
+        // 2. Add 'active' styling to the clicked button
+        const clickedBtn = e.currentTarget;
+        clickedBtn.classList.add('active');
+        
+        // 3. Hide all main content views
+        viewSections.forEach(view => view.classList.add('hidden'));
+        
+        // 4. Show the specific view that matches the button's data-target
+        const targetId = clickedBtn.getAttribute('data-target');
+        const targetView = document.getElementById(`view-${targetId}`);
+        
+        if (targetView) {
+            targetView.classList.remove('hidden');
+        }
+    });
+});
