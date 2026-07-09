@@ -117,3 +117,24 @@ h1, h2, h3, .brand-title {
 /* Floating Action Button */
 .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--text-dark); color: white; border-radius: 50%; border: none; font-size: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2); cursor: pointer; transition: 0.3s; }
 .fab:hover { transform: translateY(-5px); }
+
+/* Cards for Bookings and Customers */
+.client-card {
+    background: white; border-radius: 15px; padding: 20px;
+    box-shadow: var(--shadow-soft); border-left: 4px solid var(--primary-gold);
+    display: flex; flex-direction: column; gap: 10px; transition: 0.2s;
+}
+.client-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
+.client-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+.client-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: bold; color: var(--text-dark); }
+.client-badge { background: var(--bg-light); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; color: var(--primary-gold); font-weight: bold; }
+
+.appt-card {
+    background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px;
+    box-shadow: var(--shadow-soft); display: flex; align-items: center; justify-content: space-between;
+}
+.appt-time { font-size: 1.5rem; font-family: 'Playfair Display', serif; color: var(--primary-gold); font-weight: bold; width: 120px; }
+.appt-details { flex-grow: 1; }
+.appt-status { padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+.status-confirmed { background: #e8f5e9; color: #2e7d32; }
+.status-pending { background: #fff8e1; color: #f57f17; }
