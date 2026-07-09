@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Cigal Salon & Spa ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#c5a059">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="loginOverlay" class="overlay active">
+        <div class="login-card">
+            <h1 class="brand-title">La Cigal</h1>
+            <p class="brand-subtitle">SALON & SPA</p>
+            <div class="pin-display" id="pinDisplay">••••</div>
+            <div class="keypad">
+                <button class="key" onclick="enterPin(1)">1</button>
+                <button class="key" onclick="enterPin(2)">2</button>
+                <button class="key" onclick="enterPin(3)">3</button>
+                <button class="key" onclick="enterPin(4)">4</button>
+                <button class="key" onclick="enterPin(5)">5</button>
+                <button class="key" onclick="enterPin(6)">6</button>
+                <button class="key" onclick="enterPin(7)">7</button>
+                <button class="key" onclick="enterPin(8)">8</button>
+                <button class="key" onclick="enterPin(9)">9</button>
+                <button class="key action" onclick="clearPin()">C</button>
+                <button class="key" onclick="enterPin(0)">0</button>
+                <button class="key action gold" onclick="submitPin()">></button>
+            </div>
+            <p id="loginError" class="error-msg"></p>
+        </div>
+    </div>
+
+    <div id="appShell" class="app-container hidden">
+        
+        <nav class="sidebar">
+            <h2 class="sidebar-brand">La Cigal</h2>
+            <button class="nav-btn active"><i class="fas fa-cash-register"></i> POS</button>
+            <button class="nav-btn"><i class="fas fa-calendar-alt"></i> Bookings</button>
+            <button class="nav-btn"><i class="fas fa-users"></i> Customers</button>
+            <button class="nav-btn"><i class="fas fa-boxes"></i> Inventory</button>
+            <button class="nav-btn"><i class="fas fa-chart-line"></i> Reports</button>
+            <div class="spacer"></div>
+            <button class="nav-btn user-btn"><i class="fas fa-user-circle"></i> <span id="currentUser">Staff</span></button>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h2>Point of Sale</h2>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search Customer (Name or Phone)...">
+                </div>
+            </header>
+
+            <div class="pos-grid">
+                <div class="services-area">
+                    <div class="category-cards">
+                        <div class="cat-card active">Hair</div>
+                        <div class="cat-card">Nails</div>
+                        <div class="cat-card">Spa & Massage</div>
+                        <div class="cat-card">Bridal</div>
+                    </div>
+                    
+                    <div class="service-items" id="serviceItems">
+                        </div>
+                </div>
+
+                <div class="ticket-area">
+                    <div class="ticket-header">
+                        <h3>Current Bill</h3>
+                        <button class="icon-btn"><i class="fas fa-user-plus"></i></button>
+                    </div>
+                    <div class="ticket-customer">
+                        <p><strong>Walk-in Customer</strong></p>
+                    </div>
+                    <div class="ticket-items" id="ticketItems">
+                        <div class="empty-ticket">Select a service to start</div>
+                    </div>
+                    <div class="ticket-summary">
+                        <div class="summary-row"><span>Subtotal</span><span>Rs 0</span></div>
+                        <div class="summary-row"><span>Discount</span><span>Rs 0</span></div>
+                        <div class="summary-row total"><span>Total</span><span>Rs 0</span></div>
+                    </div>
+                    <button class="checkout-btn">PAY NOW</button>
+                </div>
+            </div>
+            
+            <button class="fab"><i class="fas fa-plus"></i></button>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
