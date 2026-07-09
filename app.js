@@ -53,7 +53,7 @@ async function submitPin() {
             loginOverlay.classList.remove('active');
             appShell.classList.remove('hidden');
             
-            loadDummyServices(); // Initial POS load
+            loadRealServices(); // Initial POS load
         } else {
             throw new Error(result.message);
         }
@@ -66,14 +66,50 @@ async function submitPin() {
 // ==========================================
 // POS LOGIC
 // ==========================================
-function loadDummyServices() {
-    const dummyServices = [
-        { Name: "Signature Blowout", Price: "Rs 2500" },
-        { Name: "Balayage Color", Price: "Rs 15000" },
-        { Name: "Keratin Treatment", Price: "Rs 12000" },
-        { Name: "Root Touch-up", Price: "Rs 3500" },
-        { Name: "Hair Spa", Price: "Rs 4000" }
-    ];
+
+    // ==========================================
+// REAL API DATA FETCHING
+// ==========================================
+async function loadRealServices() {
+    serviceItems.innerHTML = '<div style="padding: 20px; color: var(--text-muted);">Loading services from database...</div>';
+    
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "getServices"
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === "success") {
+            const services = result.data;
+            serviceItems.innerHTML = ""; // Clear loading text
+            
+            if (services.length === 0) {
+                serviceItems.innerHTML = '<div style="padding: 20px; color: var(--text-muted);">No services found in database. Please add them to your Google Sheet.</div>';
+                return;
+            }
+
+            services.forEach(srv => {
+                // Only show active services
+                if (srv.Status === "Active") {
+                    const btn = document.createElement('button');
+                    btn.className = 'service-btn';
+                    btn.innerHTML = `<h4>${srv.Name}</h4><p>Rs ${srv.Price}</p>`;
+                    btn.onclick = () => addToTicket({ Name: srv.Name, Price: `Rs ${srv.Price}` });
+                    serviceItems.appendChild(btn);
+                }
+            });
+        } else {
+            console.error("API Error:", result.message);
+        }
+    } catch (error) {
+        console.error("Fetch Error:", error);
+        serviceItems.innerHTML = '<div style="color: red; padding: 20px;">Failed to connect to database.</div>';
+    }
+}
     
     serviceItems.innerHTML = "";
     dummyServices.forEach(srv => {
