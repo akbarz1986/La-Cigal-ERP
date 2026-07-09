@@ -39,59 +39,80 @@
         
         <nav class="sidebar">
             <h2 class="sidebar-brand">La Cigal</h2>
-            <button class="nav-btn active"><i class="fas fa-cash-register"></i> POS</button>
-            <button class="nav-btn"><i class="fas fa-calendar-alt"></i> Bookings</button>
-            <button class="nav-btn"><i class="fas fa-users"></i> Customers</button>
-            <button class="nav-btn"><i class="fas fa-boxes"></i> Inventory</button>
-            <button class="nav-btn"><i class="fas fa-chart-line"></i> Reports</button>
+            <button class="nav-btn active" data-target="pos"><i class="fas fa-cash-register"></i> POS</button>
+            <button class="nav-btn" data-target="bookings"><i class="fas fa-calendar-alt"></i> Bookings</button>
+            <button class="nav-btn" data-target="customers"><i class="fas fa-users"></i> Customers</button>
+            <button class="nav-btn" data-target="inventory"><i class="fas fa-boxes"></i> Inventory</button>
+            <button class="nav-btn" data-target="reports"><i class="fas fa-chart-line"></i> Reports</button>
             <div class="spacer"></div>
             <button class="nav-btn user-btn"><i class="fas fa-user-circle"></i> <span id="currentUser">Staff</span></button>
         </nav>
 
         <main class="main-content">
-            <header class="top-bar">
-                <h2>Point of Sale</h2>
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search Customer (Name or Phone)...">
-                </div>
-            </header>
-
-            <div class="pos-grid">
-                <div class="services-area">
-                    <div class="category-cards">
-                        <div class="cat-card active">Hair</div>
-                        <div class="cat-card">Nails</div>
-                        <div class="cat-card">Spa & Massage</div>
-                        <div class="cat-card">Bridal</div>
-                    </div>
-                    
-                    <div class="service-items" id="serviceItems">
-                        </div>
-                </div>
-
-                <div class="ticket-area">
-                    <div class="ticket-header">
-                        <h3>Current Bill</h3>
-                        <button class="icon-btn"><i class="fas fa-user-plus"></i></button>
-                    </div>
-                    <div class="ticket-customer">
-                        <p><strong>Walk-in Customer</strong></p>
-                    </div>
-                    <div class="ticket-items" id="ticketItems">
-                        <div class="empty-ticket">Select a service to start</div>
-                    </div>
-                    <div class="ticket-summary">
-                        <div class="summary-row"><span>Subtotal</span><span>Rs 0</span></div>
-                        <div class="summary-row"><span>Discount</span><span>Rs 0</span></div>
-                        <div class="summary-row total"><span>Total</span><span>Rs 0</span></div>
-                    </div>
-                    <button class="checkout-btn">PAY NOW</button>
-                </div>
-            </div>
             
-            <button class="fab"><i class="fas fa-plus"></i></button>
-        </main>
+            <div id="view-pos" class="view-section">
+                <header class="top-bar">
+                    <h2>Point of Sale</h2>
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search Customer (Name or Phone)...">
+                    </div>
+                </header>
+
+                <div class="pos-grid">
+                    <div class="services-area">
+                        <div class="category-cards">
+                            <div class="cat-card active">Hair</div>
+                            <div class="cat-card">Nails</div>
+                            <div class="cat-card">Spa & Massage</div>
+                            <div class="cat-card">Bridal</div>
+                        </div>
+                        <div class="service-items" id="serviceItems"></div>
+                    </div>
+
+                    <div class="ticket-area">
+                        <div class="ticket-header">
+                            <h3>Current Bill</h3>
+                            <button class="icon-btn"><i class="fas fa-user-plus"></i></button>
+                        </div>
+                        <div class="ticket-customer">
+                            <p><strong>Walk-in Customer</strong></p>
+                        </div>
+                        <div class="ticket-items" id="ticketItems">
+                            <div class="empty-ticket">Select a service to start</div>
+                        </div>
+                        <div class="ticket-summary">
+                            <div class="summary-row"><span>Subtotal</span><span>Rs 0</span></div>
+                            <div class="summary-row"><span>Discount</span><span>Rs 0</span></div>
+                            <div class="summary-row total"><span>Total</span><span>Rs 0</span></div>
+                        </div>
+                        <button class="checkout-btn">PAY NOW</button>
+                    </div>
+                </div>
+                <button class="fab"><i class="fas fa-plus"></i></button>
+            </div>
+
+            <div id="view-bookings" class="view-section hidden">
+                <header class="top-bar"><h2>Bookings & Calendar</h2></header>
+                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Bookings module loading...</div>
+            </div>
+
+            <div id="view-customers" class="view-section hidden">
+                <header class="top-bar"><h2>Customer Management</h2></header>
+                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Customer module loading...</div>
+            </div>
+
+            <div id="view-inventory" class="view-section hidden">
+                <header class="top-bar"><h2>Inventory & Stock</h2></header>
+                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Inventory module loading...</div>
+            </div>
+
+            <div id="view-reports" class="view-section hidden">
+                <header class="top-bar"><h2>Financial Reports</h2></header>
+                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Reports module loading...</div>
+            </div>
+
+        </main> 
     </div>
 
     <script src="app.js"></script>
