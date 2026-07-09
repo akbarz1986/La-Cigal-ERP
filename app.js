@@ -114,6 +114,39 @@ function addToTicket(service) {
 
 function renderTicket() {
     const ticketDiv = document.getElementById('ticketItems');
+
+// Add this to your app.js
+async function finalizePayment() {
+    if(currentTicket.length === 0) return alert("Ticket is empty!");
+    
+    const total = currentTicket.reduce((sum, item) => sum + parseInt(item.Price.replace('Rs ', '')), 0);
+    
+    const payload = {
+        subtotal: total,
+        total: total,
+        paymentMethod: "Cash", // You can build a dropdown for this later
+        items: currentTicket,
+        createdBy: currentUser.Name
+    };
+
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "processPayment", payload: payload })
+        });
+        
+        const result = await response.json();
+        
+        if(result.status === "success") {
+            alert("Payment Successful! Bill: " + result.billID);
+            currentTicket = []; // Clear ticket
+            renderTicket();     // Update UI
+        }
+    } catch(err) {
+        alert("Payment failed. Please try again.");
+    }
+
+    
     if(currentTicket.length === 0) {
         ticketDiv.innerHTML = '<div class="empty-ticket">Select a service to start</div>';
         return;
