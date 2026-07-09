@@ -93,13 +93,35 @@
             </div>
 
             <div id="view-bookings" class="view-section hidden">
-                <header class="top-bar"><h2>Bookings & Calendar</h2></header>
-                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Bookings module loading...</div>
+                <header class="top-bar">
+                    <h2>Appointments</h2>
+                    <div class="search-bar">
+                        <i class="fas fa-calendar"></i>
+                        <input type="date" id="bookingDateFilter">
+                    </div>
+                </header>
+                
+                <div class="module-content" style="padding: 1.5rem; height: calc(100vh - 100px); overflow-y: auto;">
+                    <div class="appointment-list" id="appointmentList">
+                        </div>
+                </div>
+                <button class="fab" onclick="alert('Open New Booking Modal')"><i class="fas fa-plus"></i></button>
             </div>
 
             <div id="view-customers" class="view-section hidden">
-                <header class="top-bar"><h2>Customer Management</h2></header>
-                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Customer module loading...</div>
+                <header class="top-bar">
+                    <h2>Client Directory</h2>
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search by name, phone, or ID...">
+                    </div>
+                </header>
+
+                <div class="module-content" style="padding: 1.5rem; height: calc(100vh - 100px); overflow-y: auto;">
+                    <div class="customer-grid" id="customerGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                        </div>
+                </div>
+                <button class="fab" onclick="alert('Open New Customer Modal')"><i class="fas fa-user-plus"></i></button>
             </div>
 
             <div id="view-inventory" class="view-section hidden">
@@ -112,7 +134,7 @@
                 <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Reports module loading...</div>
             </div>
 
-        </main> 
+        </main>
     </div>
 
     <script src="app.js"></script>
