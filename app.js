@@ -114,8 +114,35 @@ function addToTicket(service) {
 
 function renderTicket() {
     const ticketDiv = document.getElementById('ticketItems');
+    
+    if(currentTicket.length === 0) {
+        ticketDiv.innerHTML = '<div class="empty-ticket">Select a service to start</div>';
+        return;
+    }
+    
+    ticketDiv.innerHTML = "";
+    let total = 0;
+    
+    currentTicket.forEach((item, index) => {
+        const priceNum = parseInt(item.Price.replace('Rs ', ''));
+        total += priceNum;
+        
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.padding = '10px 0';
+        row.style.borderBottom = '1px solid #eaeaea';
+        
+        row.innerHTML = `<span>${item.Name}</span><span>${item.Price}</span>`;
+        ticketDiv.appendChild(row);
+    });
+    
+    document.querySelector('.summary-row.total span:last-child').textContent = `Rs ${total}`;
+}
 
-// Add this to your app.js
+// ==========================================
+// PAYMENT PROCESSING
+// ==========================================
 async function finalizePayment() {
     if(currentTicket.length === 0) return alert("Ticket is empty!");
     
@@ -145,31 +172,6 @@ async function finalizePayment() {
     } catch(err) {
         alert("Payment failed. Please try again.");
     }
-
-    
-    if(currentTicket.length === 0) {
-        ticketDiv.innerHTML = '<div class="empty-ticket">Select a service to start</div>';
-        return;
-    }
-    
-    ticketDiv.innerHTML = "";
-    let total = 0;
-    
-    currentTicket.forEach((item, index) => {
-        const priceNum = parseInt(item.Price.replace('Rs ', ''));
-        total += priceNum;
-        
-        const row = document.createElement('div');
-        row.style.display = 'flex';
-        row.style.justifyContent = 'space-between';
-        row.style.padding = '10px 0';
-        row.style.borderBottom = '1px solid #eaeaea';
-        
-        row.innerHTML = `<span>${item.Name}</span><span>${item.Price}</span>`;
-        ticketDiv.appendChild(row);
-    });
-    
-    document.querySelector('.summary-row.total span:last-child').textContent = `Rs ${total}`;
 }
 
 // ==========================================
