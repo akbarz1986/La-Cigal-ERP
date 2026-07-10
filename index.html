@@ -5,138 +5,237 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>La Cigal Salon & Spa ERP</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#c5a059">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#d4af37">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-
+<body class="light-mode">
+    
+    <!-- Login Overlay -->
     <div id="loginOverlay" class="overlay active">
         <div class="login-card">
             <h1 class="brand-title">La Cigal</h1>
             <p class="brand-subtitle">SALON & SPA</p>
             <div class="pin-display" id="pinDisplay">••••</div>
             <div class="keypad">
-                <button class="key" onclick="enterPin(1)">1</button>
-                <button class="key" onclick="enterPin(2)">2</button>
-                <button class="key" onclick="enterPin(3)">3</button>
-                <button class="key" onclick="enterPin(4)">4</button>
-                <button class="key" onclick="enterPin(5)">5</button>
-                <button class="key" onclick="enterPin(6)">6</button>
-                <button class="key" onclick="enterPin(7)">7</button>
-                <button class="key" onclick="enterPin(8)">8</button>
-                <button class="key" onclick="enterPin(9)">9</button>
-                <button class="key action" onclick="clearPin()">C</button>
-                <button class="key" onclick="enterPin(0)">0</button>
-                <button class="key action gold" onclick="submitPin()">></button>
+                <button class="key" onclick="Auth.enterPin(1)">1</button>
+                <button class="key" onclick="Auth.enterPin(2)">2</button>
+                <button class="key" onclick="Auth.enterPin(3)">3</button>
+                <button class="key" onclick="Auth.enterPin(4)">4</button>
+                <button class="key" onclick="Auth.enterPin(5)">5</button>
+                <button class="key" onclick="Auth.enterPin(6)">6</button>
+                <button class="key" onclick="Auth.enterPin(7)">7</button>
+                <button class="key" onclick="Auth.enterPin(8)">8</button>
+                <button class="key" onclick="Auth.enterPin(9)">9</button>
+                <button class="key action" onclick="Auth.clearPin()">C</button>
+                <button class="key" onclick="Auth.enterPin(0)">0</button>
+                <button class="key action gold" onclick="Auth.submitPin()">></button>
             </div>
             <p id="loginError" class="error-msg"></p>
         </div>
     </div>
 
+    <!-- Main App Shell -->
     <div id="appShell" class="app-container hidden">
-        
-        <nav class="sidebar">
-            <h2 class="sidebar-brand">La Cigal</h2>
-            <button class="nav-btn active" data-target="pos"><i class="fas fa-cash-register"></i> POS</button>
-            <button class="nav-btn" data-target="bookings"><i class="fas fa-calendar-alt"></i> Bookings</button>
-            <button class="nav-btn" data-target="customers"><i class="fas fa-users"></i> Customers</button>
-            <button class="nav-btn" data-target="inventory"><i class="fas fa-boxes"></i> Inventory</button>
-            <button class="nav-btn" data-target="reports"><i class="fas fa-chart-line"></i> Reports</button>
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-brand">La Cigal</h2>
+                <button class="icon-btn close-sidebar" onclick="UI.toggleSidebar()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="nav-links">
+                <button class="nav-btn active" data-target="pos"><i class="fas fa-cash-register"></i> POS</button>
+                <button class="nav-btn" data-target="dashboard" data-role="CEO,Admin"><i class="fas fa-chart-pie"></i> Dashboard</button>
+                <button class="nav-btn" data-target="bookings"><i class="fas fa-calendar-alt"></i> Bookings</button>
+                <button class="nav-btn" data-target="customers"><i class="fas fa-users"></i> Customers</button>
+                <button class="nav-btn" data-target="inventory" data-role="CEO,Admin,Manager"><i class="fas fa-boxes"></i> Inventory</button>
+                <button class="nav-btn" data-target="packages" data-role="CEO,Admin"><i class="fas fa-gift"></i> Packages</button>
+                <button class="nav-btn" data-target="reports" data-role="CEO,Admin,Manager"><i class="fas fa-chart-line"></i> Reports</button>
+                <button class="nav-btn" data-target="settings" data-role="CEO,Admin"><i class="fas fa-cog"></i> Settings</button>
+            </div>
             <div class="spacer"></div>
-            <button class="nav-btn user-btn"><i class="fas fa-user-circle"></i> <span id="currentUser">Staff</span></button>
+            <div class="user-profile">
+                <button class="nav-btn user-btn" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> <span id="currentUser">Staff</span></button>
+                <button class="icon-btn theme-toggle" onclick="UI.toggleTheme()"><i class="fas fa-moon"></i></button>
+            </div>
         </nav>
 
         <main class="main-content">
-            
-            <div id="view-pos" class="view-section">
-                <header class="top-bar">
-                    <h2>Point of Sale</h2>
-                    <div class="search-bar">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search Customer (Name or Phone)...">
-                    </div>
-                </header>
+            <header class="mobile-header">
+                <button class="icon-btn" onclick="UI.toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <h2 class="mobile-brand">La Cigal</h2>
+                <div style="width: 40px;"></div> <!-- Spacer -->
+            </header>
 
-                <div class="pos-grid">
-                    <div class="services-area">
-                        <div class="category-cards">
-                            <div class="cat-card active">Hair</div>
-                            <div class="cat-card">Nails</div>
-                            <div class="cat-card">Spa & Massage</div>
-                            <div class="cat-card">Bridal</div>
-                        </div>
-                        <div class="service-items" id="serviceItems"></div>
-                    </div>
-
-                    <div class="ticket-area">
-                        <div class="ticket-header">
-                            <h3>Current Bill</h3>
-                            <button class="icon-btn"><i class="fas fa-user-plus"></i></button>
-                        </div>
-                        <div class="ticket-customer">
-                            <p><strong>Walk-in Customer</strong></p>
-                        </div>
-                        <div class="ticket-items" id="ticketItems">
-                            <div class="empty-ticket">Select a service to start</div>
-                        </div>
-                        <div class="ticket-summary">
-                            <div class="summary-row"><span>Subtotal</span><span>Rs 0</span></div>
-                            <div class="summary-row"><span>Discount</span><span>Rs 0</span></div>
-                            <div class="summary-row total"><span>Total</span><span>Rs 0</span></div>
-                        </div>
-                        <button class="checkout-btn" onclick="finalizePayment()">PAY NOW</button>
-                    </div>
-                </div>
-                <button class="fab"><i class="fas fa-plus"></i></button>
-            </div>
-
-            <div id="view-bookings" class="view-section hidden">
-                <header class="top-bar">
-                    <h2>Appointments</h2>
-                    <div class="search-bar">
-                        <i class="fas fa-calendar"></i>
-                        <input type="date" id="bookingDateFilter">
-                    </div>
-                </header>
+            <!-- Dynamic Views Container -->
+            <div id="viewsContainer">
+                <!-- Views will be injected or toggled here -->
                 
-                <div class="module-content" style="padding: 1.5rem; height: calc(100vh - 100px); overflow-y: auto;">
-                    <div class="appointment-list" id="appointmentList">
+                <!-- POS View -->
+                <div id="view-pos" class="view-section active">
+                    <header class="top-bar">
+                        <h2>Point of Sale</h2>
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="posSearch" placeholder="Search Customer...">
                         </div>
-                </div>
-                <button class="fab" onclick="alert('Open New Booking Modal')"><i class="fas fa-plus"></i></button>
-            </div>
-
-            <div id="view-customers" class="view-section hidden">
-                <header class="top-bar">
-                    <h2>Client Directory</h2>
-                    <div class="search-bar">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search by name, phone, or ID...">
+                    </header>
+                    <div class="pos-grid">
+                        <div class="services-area">
+                            <div class="category-cards" id="posCategories">
+                                <!-- Categories loaded dynamically -->
+                            </div>
+                            <div class="service-items" id="serviceItems">
+                                <!-- Services loaded dynamically -->
+                            </div>
+                        </div>
+                        <div class="ticket-area">
+                            <div class="ticket-header">
+                                <h3>Current Bill</h3>
+                                <button class="icon-btn" onclick="UI.openModal('customerModal')"><i class="fas fa-user-plus"></i></button>
+                            </div>
+                            <div class="ticket-customer" id="ticketCustomer">
+                                <p><strong>Walk-in Customer</strong></p>
+                            </div>
+                            <div class="ticket-items" id="ticketItems">
+                                <div class="empty-ticket">Select a service to start</div>
+                            </div>
+                            <div class="ticket-summary">
+                                <div class="summary-row"><span>Subtotal</span><span id="posSubtotal">Rs 0</span></div>
+                                <div class="summary-row"><span>Discount</span><span id="posDiscount">Rs 0</span></div>
+                                <div class="summary-row total"><span>Total</span><span id="posTotal">Rs 0</span></div>
+                            </div>
+                            <button class="checkout-btn" onclick="POS.openCheckout()">PAY NOW</button>
+                        </div>
                     </div>
-                </header>
-
-                <div class="module-content" style="padding: 1.5rem; height: calc(100vh - 100px); overflow-y: auto;">
-                    <div class="customer-grid" id="customerGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
-                        </div>
                 </div>
-                <button class="fab" onclick="alert('Open New Customer Modal')"><i class="fas fa-user-plus"></i></button>
-            </div>
 
-            <div id="view-inventory" class="view-section hidden">
-                <header class="top-bar"><h2>Inventory & Stock</h2></header>
-                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Inventory module loading...</div>
-            </div>
+                <!-- Dashboard View -->
+                <div id="view-dashboard" class="view-section hidden">
+                    <header class="top-bar"><h2>Dashboard</h2></header>
+                    <div class="dashboard-grid" id="dashboardStats">
+                        <!-- Stats injected here -->
+                    </div>
+                </div>
 
-            <div id="view-reports" class="view-section hidden">
-                <header class="top-bar"><h2>Financial Reports</h2></header>
-                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Reports module loading...</div>
-            </div>
+                <!-- Bookings View -->
+                <div id="view-bookings" class="view-section hidden">
+                    <header class="top-bar">
+                        <h2>Appointments</h2>
+                        <div class="search-bar">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="bookingDateFilter">
+                        </div>
+                        <button class="btn btn-primary" onclick="UI.openModal('bookingModal')"><i class="fas fa-plus"></i> New Booking</button>
+                    </header>
+                    <div class="module-content">
+                        <div class="appointment-list" id="appointmentList"></div>
+                    </div>
+                </div>
 
+                <!-- Customers View -->
+                <div id="view-customers" class="view-section hidden">
+                    <header class="top-bar">
+                        <h2>Client Directory</h2>
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="customerSearch" placeholder="Search by name, phone...">
+                        </div>
+                        <button class="btn btn-primary" onclick="UI.openModal('customerModal')"><i class="fas fa-user-plus"></i> New Client</button>
+                    </header>
+                    <div class="module-content">
+                        <div class="customer-grid" id="customerGrid"></div>
+                    </div>
+                </div>
+
+                <!-- Inventory View -->
+                <div id="view-inventory" class="view-section hidden">
+                    <header class="top-bar">
+                        <h2>Inventory & Stock</h2>
+                        <button class="btn btn-primary" onclick="UI.openModal('inventoryModal')"><i class="fas fa-box"></i> Add Product</button>
+                    </header>
+                    <div class="module-content">
+                        <div class="inventory-table-container">
+                            <table class="data-table" id="inventoryTable">
+                                <thead><tr><th>Name</th><th>SKU</th><th>Category</th><th>Stock</th><th>Price</th><th>Status</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </main>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Modals Container -->
+    <div id="modalsContainer">
+        <!-- Generic Modal Structure -->
+        <div id="customerModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add New Customer</h3>
+                    <button class="icon-btn" onclick="UI.closeModal('customerModal')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customerForm">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="custName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="custPhone" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="UI.closeModal('customerModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="Customers.save()">Save</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Checkout Modal -->
+        <div id="checkoutModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Complete Payment</h3>
+                    <button class="icon-btn" onclick="UI.closeModal('checkoutModal')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="payment-methods">
+                        <div class="pm-card active" data-method="Cash"><i class="fas fa-money-bill-wave"></i> Cash</div>
+                        <div class="pm-card" data-method="Card"><i class="fas fa-credit-card"></i> Card</div>
+                        <div class="pm-card" data-method="JazzCash"><i class="fas fa-mobile-alt"></i> JazzCash</div>
+                        <div class="pm-card" data-method="Split"><i class="fas fa-divide"></i> Split</div>
+                    </div>
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Amount Received</label>
+                        <input type="number" id="amountReceived" class="large-input">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="UI.closeModal('checkoutModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="POS.finalizePayment()">Confirm Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/customers.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/bookings.js"></script>
+    <script src="js/pos.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,19 +1,20 @@
 {
   "name": "La Cigal Salon & Spa ERP",
   "short_name": "La Cigal",
-  "description": "Premium Salon Management System",
-  "start_url": "/",
+  "description": "Premium Salon & Spa Management System",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#faf9f7",
-  "theme_color": "#c5a059",
+  "background_color": "#fdf5f6",
+  "theme_color": "#d4af37",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/1944/1944510.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/1944/1944510.png",
       "sizes": "512x512",
       "type": "image/png"
     }
