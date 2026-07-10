@@ -4,7 +4,10 @@ const POS = {
     selectedCustomer: null,
     appliedVoucher: null,
     discountPercent: 0,
+    discountType: 'percentage', // 'percentage' or 'fixed'
+    discountAmount: 0,
     taxPercent: 0,
+    savedBills: [], // Store saved bill drafts
 
     async loadServices() {
         try {
@@ -30,6 +33,7 @@ const POS = {
             this.services = [...formattedServices, ...formattedInventory];
             this.renderCategories();
             this.renderServices();
+            this.loadSavedBills();
         } catch (e) {
             console.error("Failed to load POS items", e);
             UI.showToast("Failed to load POS items", "error");
@@ -158,7 +162,12 @@ const POS = {
 
     updateTotals(subtotal) {
         // Apply discount
-        const discountAmount = subtotal * (this.discountPercent / 100);
+        let discountAmount = 0;
+        if (this.discountType === 'percentage') {
+            discountAmount = subtotal * (this.discountPercent / 100);
+        } else {
+            discountAmount = Math.min(this.discountAmount, subtotal);
+        }
         let afterDiscount = subtotal - discountAmount;
 
         // Apply voucher
@@ -187,6 +196,50 @@ const POS = {
         if (taxEl) taxEl.textContent = `Rs ${taxAmount.toFixed(2)}`;
         if (totalEl) totalEl.textContent = `Rs ${total.toFixed(2)}`;
         if (amountEl) amountEl.value = total.toFixed(2);
+    },
+
+    // NEW: Open discount modal from main page
+    openDiscountModal() {
+        if (this.currentTicket.length === 0) {
+            UI.showToast("Ticket is empty!", "error");
+            return;
+        }
+        document.getElementById('discountValue').value = this.discountType === 'percentage' ? this.discountPercent : this.discountAmount;
+        UI.openModal('discountModal');
+    },
+
+    // NEW: Switch discount type
+    switchDiscountType(type, btn) {
+        document.querySelectorAll('.discount-type-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.discountType = type;
+        const label = document.getElementById('discountLabel');
+        if (label) {
+            label.textContent = type === 'percentage' ? 'Discount Percentage (%)' : 'Discount Amount (Rs)';
+        }
+    },
+
+    // NEW: Apply discount from modal
+    applyDiscountFromModal() {
+        const value = parseFloat(document.getElementById('discountValue').value) || 0;
+        if (this.discountType === 'percentage') {
+            if (value < 0 || value > 100) {
+                UI.showToast("Discount percentage must be between 0 and 100", "error");
+                return;
+            }
+            this.discountPercent = value;
+        } else {
+            if (value < 0) {
+                UI.showToast("Discount amount cannot be negative", "error");
+                return;
+            }
+            this.discountAmount = value;
+        }
+        const totalText = document.getElementById('posSubtotal')?.textContent || 'Rs 0';
+        const subtotal = parseFloat(totalText.replace('Rs ', '')) || 0;
+        this.updateTotals(subtotal);
+        UI.showToast(`Discount applied: ${this.discountType === 'percentage' ? value + '%' : 'Rs ' + value}`);
+        UI.closeModal('discountModal');
     },
 
     openCheckout() {
@@ -237,10 +290,105 @@ const POS = {
     applyDiscount() {
         const discEl = document.getElementById('checkoutDiscount');
         this.discountPercent = parseFloat(discEl?.value || 0);
+        this.discountType = 'percentage';
 
         const totalText = document.getElementById('posSubtotal')?.textContent || 'Rs 0';
         const subtotal = parseFloat(totalText.replace('Rs ', '')) || 0;
         this.updateTotals(subtotal);
+    },
+
+    // NEW: Save bill as draft
+    saveBillDraft() {
+        if (this.currentTicket.length === 0) {
+            UI.showToast("Ticket is empty!", "error");
+            return;
+        }
+        const draft = {
+            id: Date.now(),
+            timestamp: new Date().toLocaleString(),
+            items: JSON.parse(JSON.stringify(this.currentTicket)),
+            customer: this.selectedCustomer,
+            discount: this.discountPercent,
+            discountType: this.discountType,
+            discountAmount: this.discountAmount
+        };
+        this.savedBills.push(draft);
+        localStorage.setItem('posBackups', JSON.stringify(this.savedBills));
+        UI.showToast(`Bill saved as draft - ${draft.timestamp}`);
+    },
+
+    // NEW: Load saved drafts
+    loadSavedBills() {
+        const saved = localStorage.getItem('posBackups');
+        this.savedBills = saved ? JSON.parse(saved) : [];
+        this.renderSavedBillsList();
+    },
+
+    // NEW: Render saved bills list
+    renderSavedBillsList() {
+        const container = document.getElementById('savedBillsList');
+        const noMsg = document.getElementById('noBillsMessage');
+        if (!container) return;
+
+        if (this.savedBills.length === 0) {
+            container.innerHTML = '';
+            if (noMsg) noMsg.style.display = 'block';
+            return;
+        }
+
+        if (noMsg) noMsg.style.display = 'none';
+        container.innerHTML = this.savedBills.map(bill => `
+            <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: var(--bg-secondary);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div>
+                        <p style="margin: 0; font-weight: bold; color: var(--text-primary);">${bill.customer ? bill.customer.Name : 'Walk-in'}</p>
+                        <small style="color: var(--text-muted);"><i class="fas fa-clock"></i> ${bill.timestamp}</small>
+                    </div>
+                    <span style="font-weight: bold; color: var(--primary-gold); font-size: 1.1rem;">${bill.items.length} items</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button class="btn btn-outline" style="font-size: 0.85rem; padding: 8px;" onclick="POS.loadBill(${bill.id})"><i class="fas fa-download"></i> Load</button>
+                    <button class="btn btn-outline" style="font-size: 0.85rem; padding: 8px; color: var(--danger);" onclick="POS.deleteBill(${bill.id})"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    // NEW: Load a specific bill
+    loadBill(billId) {
+        const bill = this.savedBills.find(b => b.id === billId);
+        if (!bill) {
+            UI.showToast("Bill not found!", "error");
+            return;
+        }
+        this.currentTicket = JSON.parse(JSON.stringify(bill.items));
+        this.selectedCustomer = bill.customer;
+        this.discountPercent = bill.discount;
+        this.discountType = bill.discountType || 'percentage';
+        this.discountAmount = bill.discountAmount || 0;
+        this.renderTicket();
+        UI.closeModal('loadBillModal');
+        UI.showToast(`Bill loaded: ${bill.timestamp}`);
+    },
+
+    // NEW: Delete a saved bill
+    deleteBill(billId) {
+        if (!confirm('Delete this draft permanently?')) return;
+        this.savedBills = this.savedBills.filter(b => b.id !== billId);
+        localStorage.setItem('posBackups', JSON.stringify(this.savedBills));
+        this.renderSavedBillsList();
+        UI.showToast("Draft deleted");
+    },
+
+    // NEW: Clear current bill
+    clearBill() {
+        if (this.currentTicket.length === 0) {
+            UI.showToast("Ticket is already empty!", "info");
+            return;
+        }
+        if (!confirm('Clear current bill? This cannot be undone.')) return;
+        this.clear();
+        UI.showToast("Bill cleared");
     },
 
     async finalizePayment() {
@@ -269,10 +417,10 @@ const POS = {
         const payload = {
             customerID: this.selectedCustomer ? this.selectedCustomer.CustomerID : "Walk-in",
             subtotal: subtotal,
-            billDiscount: subtotal * (this.discountPercent / 100),
+            billDiscount: this.discountType === 'percentage' ? subtotal * (this.discountPercent / 100) : this.discountAmount,
             voucherDiscounts: this.appliedVoucher ? (
                 this.appliedVoucher.type === 'Percentage'
-                    ? (subtotal - subtotal * this.discountPercent / 100) * (this.appliedVoucher.value / 100)
+                    ? (subtotal - (this.discountType === 'percentage' ? subtotal * this.discountPercent / 100 : this.discountAmount)) * (this.appliedVoucher.value / 100)
                     : this.appliedVoucher.value
             ) : 0,
             tax: 0,
@@ -308,6 +456,8 @@ const POS = {
         this.selectedCustomer = null;
         this.appliedVoucher = null;
         this.discountPercent = 0;
+        this.discountAmount = 0;
+        this.discountType = 'percentage';
 
         const ticketCustomer = document.getElementById('ticketCustomer');
         if (ticketCustomer) {
@@ -334,6 +484,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const text = btn.textContent.toLowerCase();
                 btn.style.display = text.includes(term) ? '' : 'none';
             });
+        });
+    }
+
+    // Update discount preview
+    const discountValue = document.getElementById('discountValue');
+    if (discountValue) {
+        discountValue.addEventListener('input', () => {
+            const subtotalText = document.getElementById('posSubtotal')?.textContent || 'Rs 0';
+            const subtotal = parseFloat(subtotalText.replace('Rs ', '')) || 0;
+            const value = parseFloat(discountValue.value) || 0;
+            const type = document.querySelector('.discount-type-btn.active')?.getAttribute('data-type') || 'percentage';
+            let preview = 0;
+            if (type === 'percentage') {
+                preview = subtotal * (value / 100);
+            } else {
+                preview = Math.min(value, subtotal);
+            }
+            const previewEl = document.getElementById('discountPreview');
+            if (previewEl) previewEl.textContent = `Rs ${preview.toFixed(2)}`;
         });
     }
 });
