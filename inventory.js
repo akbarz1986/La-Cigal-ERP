@@ -57,38 +57,34 @@ const Inventory = {
         const name = document.getElementById('invName')?.value;
         const sku = document.getElementById('invSKU')?.value;
         const category = document.getElementById('invCategory')?.value;
-        
         const stockInput = document.getElementById('invStock')?.value;
         const priceInput = document.getElementById('invPrice')?.value;
-        
-        if (!name || !sku || !priceInput || stockInput === "") {
-            UI.showToast("Please fill in required fields (Name, SKU, Stock, Price)", "error");
+        const minStock = parseInt(document.getElementById('invMinStock')?.value) || 5;
+        const purchasePrice = parseFloat(document.getElementById('invPurchasePrice')?.value) || 0;
+        const expiry = document.getElementById('invExpiry')?.value || '';
+
+        if (!name || !sku || !priceInput || stockInput === '') {
+            UI.showToast('Please fill in required fields (Name, SKU, Stock, Price)', 'error');
             return;
         }
-        
+
         const stock = parseInt(stockInput) || 0;
         const price = parseFloat(priceInput) || 0;
-        
+
         if (price < 0 || stock < 0) {
-            UI.showToast("Price and Stock must be positive values", "error");
+            UI.showToast('Price and Stock must be positive values', 'error');
             return;
         }
-        
+
         try {
-            await API.request("addInventoryItem", {
-                name,
-                sku,
-                category,
-                stock,
-                price
-            });
-            UI.showToast("Product added successfully!");
+            await API.request('addInventoryItem', { name, sku, category, stock, price, minStock, purchasePrice, expiry });
+            UI.showToast('Product added successfully!');
             UI.closeModal('inventoryModal');
             document.getElementById('inventoryForm').reset();
             this.load();
         } catch (e) {
-            UI.showToast("Failed to add product: " + e.message, "error");
-            console.error("Inventory add error:", e);
+            UI.showToast('Failed to add product: ' + e.message, 'error');
+            console.error('Inventory add error:', e);
         }
     }
 };

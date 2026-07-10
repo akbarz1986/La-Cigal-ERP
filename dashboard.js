@@ -31,11 +31,23 @@ const Dashboard = {
             return;
         }
 
+        const netProfit = this.stats.netProfit || 0;
+
         container.innerHTML = `
             <div class="stat-card">
-                <div class="stat-label">Total Revenue</div>
+                <div class="stat-label">Revenue This Month</div>
                 <div class="stat-value">Rs ${(this.stats.totalRevenue || 0).toLocaleString()}</div>
-                <div class="stat-meta">This Month</div>
+                <div class="stat-meta">Total Sales</div>
+            </div>
+            <div class="stat-card expense">
+                <div class="stat-label">Expenses This Month</div>
+                <div class="stat-value" style="color:var(--danger)">Rs ${(this.stats.totalExpenses || 0).toLocaleString()}</div>
+                <div class="stat-meta">Total Outgoings</div>
+            </div>
+            <div class="stat-card ${netProfit >= 0 ? 'profit' : 'expense'}">
+                <div class="stat-label">Net Profit</div>
+                <div class="stat-value" style="color:${netProfit >= 0 ? 'var(--success)' : 'var(--danger)'}">Rs ${netProfit.toLocaleString()}</div>
+                <div class="stat-meta">Revenue - Expenses</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Total Customers</div>
@@ -47,15 +59,17 @@ const Dashboard = {
                 <div class="stat-value">${this.stats.todayAppointments || 0}</div>
                 <div class="stat-meta">Scheduled</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card ${(this.stats.lowStockItems || 0) > 0 ? 'warning' : ''}">
                 <div class="stat-label">Low Stock Items</div>
-                <div class="stat-value">${this.stats.lowStockItems || 0}</div>
-                <div class="stat-meta">Alert</div>
+                <div class="stat-value" style="color:${(this.stats.lowStockItems || 0) > 0 ? '#f39c12' : 'var(--primary-gold)'}">
+                    ${this.stats.lowStockItems || 0}
+                </div>
+                <div class="stat-meta">${(this.stats.lowStockItems || 0) > 0 ? '⚠️ Needs Attention' : 'All Good'}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">This Month Bookings</div>
                 <div class="stat-value">${this.stats.monthlyBookings || 0}</div>
-                <div class="stat-meta">Completed</div>
+                <div class="stat-meta">Appointments</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Average Bill Value</div>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'la-cigal-erp-v2';
+const CACHE_NAME = 'la-cigal-erp-v3';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -14,6 +14,11 @@ const ASSETS_TO_CACHE = [
     './pos.js',
     './dashboard.js',
     './reports.js',
+    './expenses.js',
+    './suppliers.js',
+    './credits.js',
+    './refunds.js',
+    './settings.js',
     './app.js',
     'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'

@@ -34,6 +34,16 @@ const UI = {
             Inventory.load();
         } else if (targetId === 'reports' && typeof Reports !== 'undefined') {
             Reports.load();
+        } else if (targetId === 'expenses' && typeof Expenses !== 'undefined') {
+            Expenses.load();
+        } else if (targetId === 'suppliers' && typeof Suppliers !== 'undefined') {
+            Suppliers.load();
+        } else if (targetId === 'credits' && typeof Credits !== 'undefined') {
+            Credits.load();
+        } else if (targetId === 'refunds' && typeof Refunds !== 'undefined') {
+            Refunds.load();
+        } else if (targetId === 'settings' && typeof Settings !== 'undefined') {
+            Settings.load();
         }
     },
 

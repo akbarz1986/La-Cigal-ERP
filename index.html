@@ -6,17 +6,18 @@
     <title>La Cigal Salon & Spa ERP</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#d4af37">
+    <meta name="description" content="La Cigal Salon & Spa - Complete ERP System for managing POS, bookings, inventory, customers, and more.">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="light-mode">
-    
+
     <!-- Login Overlay -->
     <div id="loginOverlay" class="overlay active">
         <div class="login-card">
             <h1 class="brand-title">La Cigal</h1>
-            <p class="brand-subtitle">SALON & SPA</p>
+            <p class="brand-subtitle">SALON &amp; SPA</p>
             <div class="pin-display" id="pinDisplay">••••</div>
             <div class="keypad">
                 <button class="key" onclick="Auth.enterPin(1)">1</button>
@@ -30,7 +31,7 @@
                 <button class="key" onclick="Auth.enterPin(9)">9</button>
                 <button class="key action" onclick="Auth.clearPin()">C</button>
                 <button class="key" onclick="Auth.enterPin(0)">0</button>
-                <button class="key action gold" onclick="Auth.submitPin()">></button>
+                <button class="key action gold" onclick="Auth.submitPin()">&#9658;</button>
             </div>
             <p id="loginError" class="error-msg"></p>
         </div>
@@ -38,6 +39,7 @@
 
     <!-- Main App Shell -->
     <div id="appShell" class="app-container hidden">
+
         <!-- Sidebar Navigation -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -50,6 +52,10 @@
                 <button class="nav-btn" data-target="bookings"><i class="fas fa-calendar-alt"></i> Bookings</button>
                 <button class="nav-btn" data-target="customers"><i class="fas fa-users"></i> Customers</button>
                 <button class="nav-btn" data-target="inventory" data-role="CEO,Admin,Manager"><i class="fas fa-boxes"></i> Inventory</button>
+                <button class="nav-btn" data-target="suppliers" data-role="CEO,Admin,Manager"><i class="fas fa-truck"></i> Suppliers</button>
+                <button class="nav-btn" data-target="expenses" data-role="CEO,Admin,Manager"><i class="fas fa-receipt"></i> Expenses</button>
+                <button class="nav-btn" data-target="credits"><i class="fas fa-credit-card"></i> Credits</button>
+                <button class="nav-btn" data-target="refunds" data-role="CEO,Admin,Manager"><i class="fas fa-undo"></i> Refunds</button>
                 <button class="nav-btn" data-target="reports" data-role="CEO,Admin,Manager"><i class="fas fa-chart-line"></i> Reports</button>
                 <button class="nav-btn" data-target="settings" data-role="CEO,Admin"><i class="fas fa-cog"></i> Settings</button>
             </div>
@@ -64,30 +70,24 @@
             <header class="mobile-header">
                 <button class="icon-btn" onclick="UI.toggleSidebar()"><i class="fas fa-bars"></i></button>
                 <h2 class="mobile-brand">La Cigal</h2>
-                <div style="width: 40px;"></div> <!-- Spacer -->
+                <div style="width:40px;"></div>
             </header>
 
-            <!-- Dynamic Views Container -->
             <div id="viewsContainer">
-                <!-- Views will be injected or toggled here -->
-                
+
                 <!-- POS View -->
                 <div id="view-pos" class="view-section active">
                     <header class="top-bar">
                         <h2>Point of Sale</h2>
                         <div class="search-bar">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="posSearch" placeholder="Search Service...">
+                            <input type="text" id="posSearch" placeholder="Search Service or Product...">
                         </div>
                     </header>
                     <div class="pos-grid">
                         <div class="services-area">
-                            <div class="category-cards" id="posCategories">
-                                <!-- Categories loaded dynamically -->
-                            </div>
-                            <div class="service-items" id="serviceItems">
-                                <!-- Services loaded dynamically -->
-                            </div>
+                            <div class="category-cards" id="posCategories"></div>
+                            <div class="service-items" id="serviceItems"></div>
                         </div>
                         <div class="ticket-area">
                             <div class="ticket-header">
@@ -102,7 +102,8 @@
                             </div>
                             <div class="ticket-summary">
                                 <div class="summary-row"><span>Subtotal</span><span id="posSubtotal">Rs 0</span></div>
-                                <div class="summary-row"><span>Discount</span><span id="posDiscount">Rs 0</span></div>
+                                <div class="summary-row"><span>Discount</span><span id="posDiscount">- Rs 0</span></div>
+                                <div class="summary-row"><span>Tax</span><span id="posTax">Rs 0</span></div>
                                 <div class="summary-row total"><span>Total</span><span id="posTotal">Rs 0</span></div>
                             </div>
                             <button class="checkout-btn" onclick="POS.openCheckout()">PAY NOW</button>
@@ -114,9 +115,7 @@
                 <div id="view-dashboard" class="view-section">
                     <header class="top-bar"><h2>Dashboard</h2></header>
                     <div class="module-content">
-                        <div class="dashboard-grid" id="dashboardStats">
-                            <!-- Stats injected here -->
-                        </div>
+                        <div class="dashboard-grid" id="dashboardStats"></div>
                     </div>
                 </div>
 
@@ -153,16 +152,60 @@
                 <!-- Inventory View -->
                 <div id="view-inventory" class="view-section">
                     <header class="top-bar">
-                        <h2>Inventory & Stock</h2>
+                        <h2>Inventory &amp; Stock</h2>
                         <button class="btn btn-primary" onclick="UI.openModal('inventoryModal')"><i class="fas fa-box"></i> Add Product</button>
                     </header>
                     <div class="module-content">
                         <div class="inventory-table-container">
                             <table class="data-table" id="inventoryTable">
-                                <thead><tr><th>Name</th><th>SKU</th><th>Category</th><th>Stock</th><th>Price</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Name</th><th>SKU</th><th>Category</th><th>Stock</th><th>Min Stock</th><th>Price</th><th>Status</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Suppliers View -->
+                <div id="view-suppliers" class="view-section">
+                    <header class="top-bar">
+                        <h2>Suppliers &amp; Purchase Orders</h2>
+                        <button class="btn btn-primary" onclick="UI.openModal('supplierModal')"><i class="fas fa-plus"></i> Add Supplier</button>
+                    </header>
+                    <div class="module-content">
+                        <div id="supplierList"></div>
+                    </div>
+                </div>
+
+                <!-- Expenses View -->
+                <div id="view-expenses" class="view-section">
+                    <header class="top-bar">
+                        <h2>Expenses</h2>
+                        <button class="btn btn-primary" onclick="UI.openModal('expenseModal')"><i class="fas fa-plus"></i> Add Expense</button>
+                    </header>
+                    <div class="module-content">
+                        <div id="expenseSummary"></div>
+                        <div id="expenseList"></div>
+                    </div>
+                </div>
+
+                <!-- Credits View -->
+                <div id="view-credits" class="view-section">
+                    <header class="top-bar"><h2>Customer Credits</h2></header>
+                    <div class="module-content">
+                        <div id="creditSummary"></div>
+                        <div id="creditList"></div>
+                    </div>
+                </div>
+
+                <!-- Refunds View -->
+                <div id="view-refunds" class="view-section">
+                    <header class="top-bar">
+                        <h2>Refunds</h2>
+                        <button class="btn btn-primary" onclick="Refunds.openRefundModal()"><i class="fas fa-plus"></i> Process Refund</button>
+                    </header>
+                    <div class="module-content">
+                        <div id="refundSummary"></div>
+                        <div id="refundList"></div>
                     </div>
                 </div>
 
@@ -176,9 +219,7 @@
                         </div>
                     </header>
                     <div class="module-content">
-                        <div id="reportContent">
-                            <!-- Reports injected here -->
-                        </div>
+                        <div id="reportContent"></div>
                     </div>
                 </div>
 
@@ -186,30 +227,35 @@
                 <div id="view-settings" class="view-section">
                     <header class="top-bar"><h2>Settings</h2></header>
                     <div class="module-content">
-                        <div id="settingsContent">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1200px;">
+                            <!-- General Settings -->
                             <div class="settings-section">
-                                <h3>General Settings</h3>
-                                <div class="form-group">
-                                    <label>Business Name</label>
-                                    <input type="text" value="La Cigal Salon & Spa" disabled>
+                                <h3><i class="fas fa-sliders-h"></i> General Settings</h3>
+                                <div id="settingsForm">Loading...</div>
+                            </div>
+                            <!-- Users Management -->
+                            <div class="settings-section">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                                    <h3><i class="fas fa-users-cog"></i> User Management</h3>
+                                    <button class="btn btn-primary" style="padding:8px 16px;" onclick="UI.openModal('addUserModal')"><i class="fas fa-plus"></i> Add User</button>
                                 </div>
-                                <div class="form-group">
-                                    <label>Version</label>
-                                    <input type="text" value="1.0.0" disabled>
-                                </div>
+                                <div id="usersList">Loading...</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-            </div>
+            </div><!-- end viewsContainer -->
         </main>
     </div>
 
-    <!-- Modals Container -->
+    <!-- ==============================
+         MODALS CONTAINER
+    ============================== -->
     <div id="modalsContainer">
-        <!-- Customer Modal -->
-        <div id="customerModal" class="modal-overlay hidden">
+
+        <!-- Customer Modal (Enhanced) -->
+        <div id="customerModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Add New Customer</h3>
@@ -217,42 +263,77 @@
                 </div>
                 <div class="modal-body">
                     <form id="customerForm">
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input type="text" id="custName" required>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                            <div class="form-group">
+                                <label>Name *</label>
+                                <input type="text" id="custName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone *</label>
+                                <input type="tel" id="custPhone" required>
+                            </div>
+                            <div class="form-group">
+                                <label>WhatsApp</label>
+                                <input type="tel" id="custWhatsApp">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="custEmail">
+                            </div>
+                            <div class="form-group">
+                                <label>Birthday</label>
+                                <input type="date" id="custBirthday">
+                            </div>
+                            <div class="form-group">
+                                <label>Anniversary</label>
+                                <input type="date" id="custAnniversary">
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" id="custPhone" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Email (Optional)</label>
-                            <input type="email" id="custEmail">
+                            <label>Notes</label>
+                            <textarea id="custNotes" rows="2" style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);font-family:var(--font-body);resize:none;"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-outline" onclick="UI.closeModal('customerModal')">Cancel</button>
-                    <button class="btn btn-primary" onclick="Customers.save()">Save</button>
+                    <button class="btn btn-primary" onclick="Customers.save()">Save Customer</button>
                 </div>
             </div>
         </div>
-        
-        <!-- Checkout Modal -->
-        <div id="checkoutModal" class="modal-overlay hidden">
+
+        <!-- Checkout Modal (Enhanced with Voucher, Discount, Credit) -->
+        <div id="checkoutModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Complete Payment</h3>
                     <button class="icon-btn" onclick="UI.closeModal('checkoutModal')"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Payment Methods -->
                     <div class="payment-methods">
                         <div class="pm-card active" data-method="Cash"><i class="fas fa-money-bill-wave"></i> Cash</div>
                         <div class="pm-card" data-method="Card"><i class="fas fa-credit-card"></i> Card</div>
                         <div class="pm-card" data-method="JazzCash"><i class="fas fa-mobile-alt"></i> JazzCash</div>
                         <div class="pm-card" data-method="Split"><i class="fas fa-divide"></i> Split</div>
+                        <div class="pm-card" data-method="Credit"><i class="fas fa-file-invoice"></i> Credit</div>
                     </div>
-                    <div class="form-group" style="margin-top: 20px;">
+                    <!-- Voucher -->
+                    <div class="form-group" style="margin-top:20px;">
+                        <label>Voucher Code</label>
+                        <div style="display:flex;gap:10px;">
+                            <input type="text" id="voucherCode" placeholder="Enter code..." style="flex:1;padding:10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);text-transform:uppercase;">
+                            <button class="btn btn-outline" onclick="POS.applyVoucher()" style="white-space:nowrap;">Apply</button>
+                        </div>
+                        <div id="voucherStatus" style="margin-top:6px;font-size:0.85rem;"></div>
+                    </div>
+                    <!-- Discount -->
+                    <div class="form-group">
+                        <label>Bill Discount (%)</label>
+                        <input type="number" id="checkoutDiscount" min="0" max="100" value="0" oninput="POS.applyDiscount()" style="padding:10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);width:100%;">
+                    </div>
+                    <!-- Amount Received -->
+                    <div class="form-group">
                         <label>Amount Received</label>
                         <input type="number" id="amountReceived" class="large-input">
                     </div>
@@ -264,8 +345,8 @@
             </div>
         </div>
 
-        <!-- Inventory Modal -->
-        <div id="inventoryModal" class="modal-overlay hidden">
+        <!-- Inventory Modal (Enhanced) -->
+        <div id="inventoryModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Add New Product</h3>
@@ -273,25 +354,39 @@
                 </div>
                 <div class="modal-body">
                     <form id="inventoryForm">
-                        <div class="form-group">
-                            <label>Product Name</label>
-                            <input type="text" id="invName" required>
-                        </div>
-                        <div class="form-group">
-                            <label>SKU</label>
-                            <input type="text" id="invSKU" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Category</label>
-                            <input type="text" id="invCategory">
-                        </div>
-                        <div class="form-group">
-                            <label>Stock Quantity</label>
-                            <input type="number" id="invStock" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Price (Rs)</label>
-                            <input type="number" id="invPrice" min="0" required>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                            <div class="form-group">
+                                <label>Product Name *</label>
+                                <input type="text" id="invName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>SKU *</label>
+                                <input type="text" id="invSKU" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Category</label>
+                                <input type="text" id="invCategory">
+                            </div>
+                            <div class="form-group">
+                                <label>Stock Qty *</label>
+                                <input type="number" id="invStock" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Min Stock Alert</label>
+                                <input type="number" id="invMinStock" min="0" value="5">
+                            </div>
+                            <div class="form-group">
+                                <label>Purchase Price (Rs)</label>
+                                <input type="number" id="invPurchasePrice" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Selling Price (Rs) *</label>
+                                <input type="number" id="invPrice" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Expiry Date</label>
+                                <input type="date" id="invExpiry">
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -303,7 +398,7 @@
         </div>
 
         <!-- Booking Modal -->
-        <div id="bookingModal" class="modal-overlay hidden">
+        <div id="bookingModal" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>New Appointment</h3>
@@ -312,20 +407,22 @@
                 <div class="modal-body">
                     <form id="bookingForm">
                         <div class="form-group">
-                            <label>Customer Name</label>
+                            <label>Customer Name *</label>
                             <input type="text" id="bookingCustomer" required>
                         </div>
-                        <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" id="bookingDate" required>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                            <div class="form-group">
+                                <label>Date *</label>
+                                <input type="date" id="bookingDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Time *</label>
+                                <input type="time" id="bookingTime" required>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>Time</label>
-                            <input type="time" id="bookingTime" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Service</label>
-                            <input type="text" id="bookingService">
+                            <label>Service(s)</label>
+                            <input type="text" id="bookingService" placeholder="e.g. Haircut, Facial">
                         </div>
                     </form>
                 </div>
@@ -335,7 +432,262 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- Expense Modal -->
+        <div id="expenseModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Record Expense</h3>
+                    <button class="icon-btn" onclick="UI.closeModal('expenseModal')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="expenseForm">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                            <div class="form-group">
+                                <label>Date *</label>
+                                <input type="date" id="expDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Category *</label>
+                                <select id="expCategory" style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);">
+                                    <option>Rent</option>
+                                    <option>Utilities</option>
+                                    <option>Salaries</option>
+                                    <option>Supplies</option>
+                                    <option>Marketing</option>
+                                    <option>Maintenance</option>
+                                    <option>Food &amp; Beverages</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Amount (Rs) *</label>
+                                <input type="number" id="expAmount" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Method</label>
+                                <select id="expPayment" style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);">
+                                    <option>Cash</option>
+                                    <option>Card</option>
+                                    <option>Bank Transfer</option>
+                                    <option>JazzCash</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes</label>
+                            <input type="text" id="expNotes" placeholder="Description...">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="UI.closeModal('expenseModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="Expenses.save()">Record Expense</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supplier Modal -->
+        <div id="supplierModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Supplier</h3>
+                    <button class="icon-btn" onclick="UI.closeModal('supplierModal')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="supplierForm">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                            <div class="form-group">
+                                <label>Supplier Name *</label>
+                                <input type="text" id="suppName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Company</label>
+                                <input type="text" id="suppCompany">
+                            </div>
+                            <div class="form-group">
+                                <label>Contact Person</label>
+                                <input type="text" id="suppContact">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone *</label>
+                                <input type="tel" id="suppPhone" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="suppEmail">
+                            </div>
+                            <div class="form-group">
+                                <label>Payment Terms</label>
+                                <select id="suppPaymentTerms" style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);">
+                                    <option>Immediate</option>
+                                    <option>15 Days</option>
+                                    <option>30 Days</option>
+                                    <option>45 Days</option>
+                                    <option>60 Days</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="suppAddress">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="UI.closeModal('supplierModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="Suppliers.save()">Add Supplier</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase Order Modal -->
+        <div id="purchaseOrderModal" class="modal-overlay">
+            <div class="modal-content" style="max-width:700px;">
+                <div class="modal-header">
+                    <h3>Create Purchase Order — <span id="poSupplierName"></span></h3>
+                    <button class="icon-btn" onclick="UI.closeModal('purchaseOrderModal')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="poSupplierID">
+                    <div class="form-group">
+                        <label>Expected Delivery Date</label>
+                        <input type="date" id="poDeliveryDate" style="padding:10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);width:100%;">
+                    </div>
+                    <table class="data-table" style="margin-top:10px;">
+                        <thead><tr><th>Product</th><th>Qty</th><th>Cost Price</th><th></th></tr></thead>
+                        <tbody id="poItemsBody"></tbody>
+                    </table>
+                    <button class="btn btn-outline" style="margin-top:10px;" onclick="Suppliers.addPOItem()">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="UI.closeModal('purchaseOrderModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="Suppliers.savePO()">Create PO</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Credit Payment Modal -->
+        <div id="creditPaymentModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Record Credit Payment</h3>
+                    <button class="icon-btn" onclick="UI.closeModal('creditPaymentModal')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="creditPaymentID">
+                    <div class="form-group">
+                        <label>Amount (Rs) *</label>
+                        <input type="number" id="creditPaymentAmount" min="1" class="large-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select id="creditPaymentMethod" style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);">
+                            <option>Cash</option>
+                            <option>Card</option>
+                            <option>JazzCash</option>
+                            <option>Bank Transfer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <input type="text" id="creditPaymentNotes" placeholder="Optional notes...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="UI.closeModal('creditPaymentModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="Credits.recordPayment()">Record Payment</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Refund Modal -->
+        <div id="refundModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Process Refund</h3>
+                    <button class="icon-btn" onclick="UI.closeModal('refundModal')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Original Invoice / Bill ID *</label>
+                        <input type="text" id="refundBillID" placeholder="e.g. INV-1001">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                        <div class="form-group">
+                            <label>Refund Amount (Rs) *</label>
+                            <input type="number" id="refundAmount" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Refund Method</label>
+                            <select id="refundMethod" style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);">
+                                <option>Cash</option>
+                                <option>Card</option>
+                                <option>JazzCash</option>
+                                <option>Credit Note</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason *</label>
+                        <input type="text" id="refundReason" placeholder="Reason for refund...">
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <input type="text" id="refundNotes" placeholder="Additional notes...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="UI.closeModal('refundModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="Refunds.process()">Process Refund</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add User Modal -->
+        <div id="addUserModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add New User</h3>
+                    <button class="icon-btn" onclick="UI.closeModal('addUserModal')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                            <div class="form-group">
+                                <label>Full Name *</label>
+                                <input type="text" id="newUserName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Role *</label>
+                                <select id="newUserRole" style="width:100%;padding:12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-color);color:var(--text-primary);" required>
+                                    <option>CEO</option>
+                                    <option>Admin</option>
+                                    <option>Manager</option>
+                                    <option>Staff</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>4-Digit PIN *</label>
+                                <input type="password" id="newUserPIN" maxlength="4" pattern="\d{4}" placeholder="e.g. 1234" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="newUserEmail">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="UI.closeModal('addUserModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="Settings.saveUser()">Add User</button>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end modalsContainer -->
 
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container"></div>
@@ -351,9 +703,13 @@
     <script src="pos.js"></script>
     <script src="dashboard.js"></script>
     <script src="reports.js"></script>
+    <script src="expenses.js"></script>
+    <script src="suppliers.js"></script>
+    <script src="credits.js"></script>
+    <script src="refunds.js"></script>
+    <script src="settings.js"></script>
     <script src="app.js"></script>
     <script>
-        // Register Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(err => {
                 console.warn('Service Worker registration failed:', err);

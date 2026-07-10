@@ -827,6 +827,58 @@ button {
 }
 
 /* ==========================================
+   BADGES
+========================================== */
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.badge-info { background: rgba(52, 152, 219, 0.15); color: #3498db; }
+.badge-success { background: rgba(46, 204, 113, 0.15); color: var(--success); }
+.badge-danger { background: rgba(231, 76, 60, 0.15); color: var(--danger); }
+.badge-gold { background: rgba(212, 175, 55, 0.15); color: var(--primary-gold); }
+
+/* ==========================================
+   EMPTY STATES
+========================================== */
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    opacity: 0.3;
+}
+
+.empty-state p {
+    font-size: 1rem;
+}
+
+/* ==========================================
+   ENHANCED DASHBOARD
+========================================== */
+.stat-card.profit {
+    border-left: 4px solid var(--success);
+}
+.stat-card.expense {
+    border-left: 4px solid var(--danger);
+}
+.stat-card.warning {
+    border-left: 4px solid #f39c12;
+}
+
+/* ==========================================
    RESPONSIVE (MOBILE)
 ========================================== */
 @media (max-width: 768px) {
