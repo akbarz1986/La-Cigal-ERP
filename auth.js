@@ -53,6 +53,15 @@ const Auth = {
     logout() {
         this.currentUser = null;
         this.clearPin();
+        
+        // Clear application state
+        if (typeof POS !== 'undefined' && POS.clear) {
+            POS.clear();
+        }
+        if (typeof UI !== 'undefined') {
+            UI.switchView('pos'); // Reset to default view
+        }
+        
         document.getElementById('loginOverlay').classList.add('active');
         document.getElementById('appShell').classList.add('hidden');
     }

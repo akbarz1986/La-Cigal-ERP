@@ -5,11 +5,19 @@ const POS = {
 
     async loadServices() {
         try {
-            this.services = await API.request("getServices");
+            const [services, inventory] = await Promise.all([
+                API.request("getServices").catch(() => []),
+                API.request("getInventory").catch(() => [])
+            ]);
+            
+            const formattedServices = (services || []).map(s => ({...s, Type: "Service", ServiceID: s.ServiceID}));
+            const formattedInventory = (inventory || []).map(i => ({...i, Type: "Retail", ProductID: i.ProductID, ServiceID: i.ProductID}));
+            
+            this.services = [...formattedServices, ...formattedInventory];
             this.renderServices();
         } catch (e) {
-            console.error("Failed to load services", e);
-            UI.showToast("Failed to load services", "error");
+            console.error("Failed to load POS items", e);
+            UI.showToast("Failed to load POS items", "error");
         }
     },
 
@@ -36,10 +44,21 @@ const POS = {
             btn.innerHTML = `
                 <h4>${srv.Name}</h4>
                 <p>Rs ${parseFloat(srv.Price) || 0}</p>
+                ${srv.Type === 'Retail' ? `<small style="color:var(--text-muted)">Stock: ${srv.Stock || 0}</small>` : ''}
             `;
             btn.onclick = () => this.addToTicket(srv);
             container.appendChild(btn);
         });
+    },
+
+    clear() {
+        this.currentTicket = [];
+        this.selectedCustomer = null;
+        const ticketCustomer = document.getElementById('ticketCustomer');
+        if (ticketCustomer) {
+            ticketCustomer.innerHTML = `<p><strong>Walk-in Customer</strong></p>`;
+        }
+        this.renderTicket();
     },
 
     setCustomer(customer) {
@@ -148,13 +167,7 @@ const POS = {
             const result = await API.request("processPayment", payload);
             UI.showToast("Payment Successful! Invoice: " + (result.invoiceNumber || 'N/A'));
             
-            this.currentTicket = [];
-            this.selectedCustomer = null;
-            const ticketCustomer = document.getElementById('ticketCustomer');
-            if (ticketCustomer) {
-                ticketCustomer.innerHTML = `<p><strong>Walk-in Customer</strong></p>`;
-            }
-            this.renderTicket();
+            this.clear();
             UI.closeModal('checkoutModal');
             
         } catch(err) {

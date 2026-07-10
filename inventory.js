@@ -57,13 +57,17 @@ const Inventory = {
         const name = document.getElementById('invName')?.value;
         const sku = document.getElementById('invSKU')?.value;
         const category = document.getElementById('invCategory')?.value;
-        const stock = parseInt(document.getElementById('invStock')?.value) || 0;
-        const price = parseFloat(document.getElementById('invPrice')?.value) || 0;
         
-        if (!name || !sku || !price) {
-            UI.showToast("Please fill in required fields (Name, SKU, Price)", "error");
+        const stockInput = document.getElementById('invStock')?.value;
+        const priceInput = document.getElementById('invPrice')?.value;
+        
+        if (!name || !sku || !priceInput || stockInput === "") {
+            UI.showToast("Please fill in required fields (Name, SKU, Stock, Price)", "error");
             return;
         }
+        
+        const stock = parseInt(stockInput) || 0;
+        const price = parseFloat(priceInput) || 0;
         
         if (price < 0 || stock < 0) {
             UI.showToast("Price and Stock must be positive values", "error");

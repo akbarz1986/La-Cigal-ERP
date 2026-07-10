@@ -64,6 +64,39 @@ const Bookings = {
             `;
             list.appendChild(card);
         });
+    },
+
+    async save() {
+        const customerName = document.getElementById('bookingCustomer')?.value;
+        const date = document.getElementById('bookingDate')?.value;
+        const time = document.getElementById('bookingTime')?.value;
+        const services = document.getElementById('bookingService')?.value;
+        
+        if (!customerName || !date || !time) {
+            UI.showToast("Please fill all required fields", "error");
+            return;
+        }
+        
+        const payload = {
+            customerName,
+            date,
+            time,
+            services: services || "General",
+            phone: "",
+            staff: "Any",
+            duration: 60
+        };
+        
+        try {
+            await API.request("createBooking", payload);
+            UI.showToast("Booking created successfully!");
+            UI.closeModal('bookingModal');
+            document.getElementById('bookingForm').reset();
+            this.load();
+        } catch (e) {
+            UI.showToast("Failed to create booking: " + e.message, "error");
+            console.error("Booking add error:", e);
+        }
     }
 };
 
