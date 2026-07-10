@@ -1,35 +1,54 @@
 const Bookings = {
     data: [],
+    filteredData: [],
 
     async load() {
         try {
             this.data = await API.request("getAppointments");
+            this.filteredData = [...this.data];
             this.render();
         } catch (e) {
             console.error("Failed to load bookings", e);
+            UI.showToast("Failed to load bookings", "error");
         }
+    },
+
+    filter(dateString) {
+        if (!dateString) {
+            this.filteredData = [...this.data];
+        } else {
+            const filterDate = dateString;
+            this.filteredData = this.data.filter(appt => {
+                const apptDate = appt.Date ? appt.Date.substring(0, 10) : '';
+                return apptDate === filterDate;
+            });
+        }
+        this.render();
     },
 
     render() {
         const list = document.getElementById('appointmentList');
-        if (!list) return;
-        
-        list.innerHTML = "";
-        
-        if (this.data.length === 0) {
-            list.innerHTML = "<div style='color: var(--text-muted)'>No appointments found.</div>";
+        if (!list) {
+            console.warn("Appointment list not found");
             return;
         }
         
-        this.data.forEach(appt => {
+        list.innerHTML = "";
+        
+        if (this.filteredData.length === 0) {
+            list.innerHTML = "<div style='color: var(--text-muted); text-align: center; padding: 30px;'>No appointments found.</div>";
+            return;
+        }
+        
+        this.filteredData.forEach(appt => {
             if(!appt.ApptID) return;
             const statusClass = appt.Status === "Confirmed" ? "color: var(--success);" : "color: var(--primary-gold);";
             
             const card = document.createElement('div');
-            card.style.cssText = "background: var(--surface-color); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 20px;";
+            card.style.cssText = "background: var(--surface-color); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); display: flex; align-items: center;";
             
             card.innerHTML = `
-                <div style="font-size: 1.2rem; font-weight: bold; width: 80px; text-align: right;">
+                <div style="font-size: 1.2rem; font-weight: bold; width: 80px; text-align: right; margin-right: 20px;">
                     ${appt.Time || "12:00"}
                 </div>
                 <div style="flex: 1;">
@@ -47,3 +66,12 @@ const Bookings = {
         });
     }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dateFilter = document.getElementById('bookingDateFilter');
+    if (dateFilter) {
+        dateFilter.addEventListener('change', (e) => {
+            Bookings.filter(e.target.value);
+        });
+    }
+});

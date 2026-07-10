@@ -1,12 +1,17 @@
 const UI = {
     toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('open');
+        if (sidebar) {
+            sidebar.classList.toggle('open');
+        }
     },
 
     switchView(targetId) {
-        document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
-        document.querySelectorAll('.nav-btn[data-target]').forEach(btn => btn.classList.remove('active'));
+        const views = document.querySelectorAll('.view-section');
+        const btns = document.querySelectorAll('.nav-btn[data-target]');
+        
+        views.forEach(view => view.classList.remove('active'));
+        btns.forEach(btn => btn.classList.remove('active'));
         
         const targetView = document.getElementById(`view-${targetId}`);
         const targetBtn = document.querySelector(`.nav-btn[data-target="${targetId}"]`);
@@ -14,8 +19,22 @@ const UI = {
         if (targetView) targetView.classList.add('active');
         if (targetBtn) targetBtn.classList.add('active');
         
-        // Mobile sidebar close on click
-        document.getElementById('sidebar').classList.remove('open');
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            sidebar.classList.remove('open');
+        }
+
+        if (targetId === 'dashboard' && typeof Dashboard !== 'undefined') {
+            Dashboard.load();
+        } else if (targetId === 'bookings' && typeof Bookings !== 'undefined') {
+            Bookings.load();
+        } else if (targetId === 'customers' && typeof Customers !== 'undefined') {
+            Customers.load();
+        } else if (targetId === 'inventory' && typeof Inventory !== 'undefined') {
+            Inventory.load();
+        } else if (targetId === 'reports' && typeof Reports !== 'undefined') {
+            Reports.load();
+        }
     },
 
     toggleTheme() {
@@ -35,15 +54,28 @@ const UI = {
     },
 
     openModal(modalId) {
-        document.getElementById(modalId).classList.add('active');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+        } else {
+            console.warn(`Modal with ID "${modalId}" not found`);
+        }
     },
 
     closeModal(modalId) {
-        document.getElementById(modalId).classList.remove('active');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+        }
     },
 
     showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
+        if (!container) {
+            console.warn('Toast container not found');
+            return;
+        }
+
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.textContent = message;
@@ -58,9 +90,8 @@ const UI = {
     },
     
     applyRolePermissions(role) {
-        // Hide elements that don't match the role
         document.querySelectorAll('[data-role]').forEach(el => {
-            const allowedRoles = el.getAttribute('data-role').split(',');
+            const allowedRoles = el.getAttribute('data-role').split(',').map(r => r.trim());
             if (!allowedRoles.includes(role)) {
                 el.style.display = 'none';
             } else {
@@ -70,12 +101,18 @@ const UI = {
     }
 };
 
-// Setup Navigation
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-btn[data-target]').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            UI.switchView(e.currentTarget.getAttribute('data-target'));
+            const target = e.currentTarget.getAttribute('data-target');
+            UI.switchView(target);
         });
     });
     UI.initTheme();
+});
+
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+    }
 });

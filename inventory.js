@@ -2,27 +2,89 @@ const Inventory = {
     data: [],
 
     async load() {
-        // Placeholders. We would query "getInventory" from API.gs
+        try {
+            this.data = await API.request("getInventory");
+            this.render();
+        } catch (e) {
+            console.error("Failed to load inventory", e);
+            UI.showToast("Failed to load inventory", "error");
+            // Fallback to empty state
+            this.data = [];
+            this.render();
+        }
+    },
+
+    render() {
         const tbody = document.querySelector('#inventoryTable tbody');
-        if (!tbody) return;
+        if (!tbody) {
+            console.warn("Inventory table body not found");
+            return;
+        }
         
-        tbody.innerHTML = `
-            <tr>
-                <td>Gold Facial Kit</td>
-                <td>SKU-1001</td>
-                <td>Retail</td>
-                <td><strong style="color: var(--success)">45</strong></td>
-                <td>Rs 1500</td>
-                <td>Active</td>
-            </tr>
-            <tr>
-                <td>L'Oreal Shampoo 500ml</td>
-                <td>SKU-1002</td>
-                <td>Salon Use</td>
-                <td><strong style="color: var(--danger)">2</strong></td>
-                <td>Rs 800</td>
-                <td>Low Stock</td>
-            </tr>
-        `;
+        tbody.innerHTML = "";
+        
+        if (this.data.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                        No inventory items found. Add your first product.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        this.data.forEach(item => {
+            if (!item.SKU) return;
+            
+            const stockColor = item.Stock > 10 ? 'var(--success)' : item.Stock > 0 ? 'var(--primary-gold)' : 'var(--danger)';
+            const stockStatus = item.Stock > 10 ? 'In Stock' : item.Stock > 0 ? 'Low Stock' : 'Out of Stock';
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.Name || 'Unknown'}</td>
+                <td>${item.SKU}</td>
+                <td>${item.Category || 'Uncategorized'}</td>
+                <td><strong style="color: ${stockColor}">${item.Stock || 0}</strong></td>
+                <td>Rs ${parseFloat(item.Price) || 0}</td>
+                <td>${stockStatus}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    },
+    
+    async save() {
+        const name = document.getElementById('invName')?.value;
+        const sku = document.getElementById('invSKU')?.value;
+        const category = document.getElementById('invCategory')?.value;
+        const stock = parseInt(document.getElementById('invStock')?.value) || 0;
+        const price = parseFloat(document.getElementById('invPrice')?.value) || 0;
+        
+        if (!name || !sku || !price) {
+            UI.showToast("Please fill in required fields (Name, SKU, Price)", "error");
+            return;
+        }
+        
+        if (price < 0 || stock < 0) {
+            UI.showToast("Price and Stock must be positive values", "error");
+            return;
+        }
+        
+        try {
+            await API.request("addInventoryItem", {
+                name,
+                sku,
+                category,
+                stock,
+                price
+            });
+            UI.showToast("Product added successfully!");
+            UI.closeModal('inventoryModal');
+            document.getElementById('inventoryForm').reset();
+            this.load();
+        } catch (e) {
+            UI.showToast("Failed to add product: " + e.message, "error");
+            console.error("Inventory add error:", e);
+        }
     }
 };
