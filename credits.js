@@ -26,8 +26,11 @@ const Credits = {
         const container = document.getElementById('creditList');
         if (!container) return;
 
-        const outstanding = this.data.filter(c => c.Status === 'Outstanding');
-        const totalOutstanding = outstanding.reduce((sum, c) => sum + parseFloat(c.RemainingAmount || 0), 0);
+        const outstanding = this.data.filter(c => c.Status !== 'Paid');
+        const totalOutstanding = outstanding.reduce((sum, c) => {
+            const rem = parseFloat(c.RemainingAmo !== undefined ? c.RemainingAmo : (c.RemainingAmount !== undefined ? c.RemainingAmount : c.Amount)) || 0;
+            return sum + rem;
+        }, 0);
 
         const summary = document.getElementById('creditSummary');
         if (summary) {
@@ -45,19 +48,31 @@ const Credits = {
 
         container.innerHTML = `
             <table class="data-table">
-                <thead><tr><th>Customer</th><th>Invoice</th><th>Total Due</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>Customer</th><th>Invoice</th><th>Total Due</th><th>Paid</th><th>Remaining</th><th>Pay Date</th><th>MOP</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody>
-                    ${this.data.map(c => `
+                    ${this.data.map(c => {
+                        const totalDue = parseFloat(c.OutstandingBal !== undefined ? c.OutstandingBal : (c.OutstandingBalance !== undefined ? c.OutstandingBalance : c.Amount)) || 0;
+                        const paid = parseFloat(c.PaidAmount !== undefined ? c.PaidAmount : 0);
+                        const remaining = parseFloat(c.RemainingAmo !== undefined ? c.RemainingAmo : (c.RemainingAmount !== undefined ? c.RemainingAmount : c.Amount)) || 0;
+                        const status = c.Status || 'Unpaid';
+                        const invoice = c.InvoiceNumber || '-';
+                        const payDate = c.PaymentDate || '-';
+                        const mop = c.MOP || '-';
+                        
+                        return `
                         <tr>
                             <td><strong>${this.getCustomerName(c.CustomerID)}</strong></td>
-                            <td>${c.InvoiceNumber || '-'}</td>
-                            <td>Rs ${parseFloat(c.OutstandingBalance || 0).toLocaleString()}</td>
-                            <td style="color:var(--success)">Rs ${parseFloat(c.PaidAmount || 0).toLocaleString()}</td>
-                            <td><strong style="color:${parseFloat(c.RemainingAmount||0)>0?'var(--danger)':'var(--success)'}">Rs ${parseFloat(c.RemainingAmount || 0).toLocaleString()}</strong></td>
-                            <td><span class="badge ${c.Status === 'Paid' ? 'badge-success' : 'badge-danger'}">${c.Status || 'Outstanding'}</span></td>
-                            <td>${c.Status !== 'Paid' ? `<button class="btn btn-primary" style="padding:6px 12px;font-size:0.85rem;" onclick="Credits.openPaymentModal('${c.CreditID}','${parseFloat(c.RemainingAmount||0)}')">Record Payment</button>` : '-'}</td>
+                            <td>${invoice}</td>
+                            <td>Rs ${totalDue.toLocaleString()}</td>
+                            <td style="color:var(--success)">Rs ${paid.toLocaleString()}</td>
+                            <td><strong style="color:${remaining > 0 ? 'var(--danger)' : 'var(--success)'}">Rs ${remaining.toLocaleString()}</strong></td>
+                            <td>${payDate}</td>
+                            <td><span class="badge" style="background:var(--primary-pink-dark);color:var(--text-primary);border:1px solid var(--border-color);">${mop}</span></td>
+                            <td><span class="badge ${status === 'Paid' ? 'badge-success' : 'badge-danger'}">${status}</span></td>
+                            <td>${status !== 'Paid' ? `<button class="btn btn-primary" style="padding:6px 12px;font-size:0.85rem;" onclick="Credits.openPaymentModal('${c.CreditID}','${remaining}')">Record Payment</button>` : '-'}</td>
                         </tr>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </tbody>
             </table>`;
     },
@@ -66,6 +81,14 @@ const Credits = {
         document.getElementById('creditPaymentID').value = creditID;
         document.getElementById('creditPaymentAmount').value = remaining;
         document.getElementById('creditPaymentAmount').max = remaining;
+        
+        // Set payment date default to today (local date)
+        const today = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD format
+        const dateInput = document.getElementById('creditPaymentDate');
+        if (dateInput) {
+            dateInput.value = today;
+        }
+        
         UI.openModal('creditPaymentModal');
     },
 
@@ -73,6 +96,7 @@ const Credits = {
         const creditID = document.getElementById('creditPaymentID')?.value;
         const amount = parseFloat(document.getElementById('creditPaymentAmount')?.value);
         const method = document.getElementById('creditPaymentMethod')?.value;
+        const date = document.getElementById('creditPaymentDate')?.value;
         const notes = document.getElementById('creditPaymentNotes')?.value;
 
         if (!creditID || isNaN(amount) || amount <= 0) {
@@ -81,7 +105,7 @@ const Credits = {
         }
 
         try {
-            await API.request("recordCreditPayment", { creditID, amount, method, notes });
+            await API.request("recordCreditPayment", { creditID, amount, method, date, notes });
             UI.showToast("Payment recorded successfully!");
             UI.closeModal('creditPaymentModal');
             this.load();

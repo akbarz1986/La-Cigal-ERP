@@ -44,6 +44,8 @@ const UI = {
             Refunds.load();
         } else if (targetId === 'settings' && typeof Settings !== 'undefined') {
             Settings.load();
+        } else if (targetId === 'packages' && typeof Packages !== 'undefined') {
+            Packages.load();
         }
     },
 

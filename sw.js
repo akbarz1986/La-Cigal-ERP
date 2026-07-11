@@ -1,74 +1,21 @@
-const CACHE_NAME = 'la-cigal-erp-v3';
-const ASSETS_TO_CACHE = [
-    './',
-    './index.html',
-    './styles.css',
-    './manifest.json',
-    './config.js',
-    './api.js',
-    './ui.js',
-    './auth.js',
-    './customers.js',
-    './inventory.js',
-    './bookings.js',
-    './pos.js',
-    './dashboard.js',
-    './reports.js',
-    './expenses.js',
-    './suppliers.js',
-    './credits.js',
-    './refunds.js',
-    './settings.js',
-    './app.js',
-    'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
-];
-
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
-    );
+// Self-destructive Service Worker to clear old caches and unregister
+self.addEventListener('install', (e) => {
     self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((name) => {
-                    if (name !== CACHE_NAME) {
-                        return caches.delete(name);
-                    }
-                })
-            );
-        })
-    );
-    self.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-    // Only intercept GET requests for caching
-    if (event.request.method !== 'GET') return;
-    
-    // Don't cache API calls
-    if (event.request.url.includes('script.google.com')) return;
-
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-            return fetch(event.request).then((response) => {
-                // Cache new assets dynamically
-                if (response && response.status === 200 && response.type === 'basic') {
-                    const responseToCache = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseToCache);
-                    });
+self.addEventListener('activate', (e) => {
+    e.waitUntil(
+        caches.keys().then((keys) => {
+            return Promise.all(keys.map(key => caches.delete(key)));
+        }).then(() => {
+            return self.registration.unregister();
+        }).then(() => {
+            return self.clients.matchAll();
+        }).then((clients) => {
+            clients.forEach(client => {
+                if (client.navigate) {
+                    client.navigate(client.url);
                 }
-                return response;
             });
         })
     );

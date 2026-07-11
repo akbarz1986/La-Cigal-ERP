@@ -7,6 +7,7 @@ const App = {
         Customers.load();
         Bookings.load();
         Inventory.load();
+        Packages.load();
         
         // Setup initial UI states
         UI.switchView('pos');
