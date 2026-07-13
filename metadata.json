@@ -1,8 +1,0 @@
-{
-  "name": "La Cigal Salon & Spa ERP",
-  "description": "La Cigal Salon & Spa - Complete ERP System for managing POS, bookings, inventory, customers, and more.",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}
