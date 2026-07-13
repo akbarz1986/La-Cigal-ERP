@@ -101,8 +101,58 @@ const UI = {
         }, 3000);
     },
     
-    applyRolePermissions(role) {
+    async applyRolePermissions(role, settingsObj = null) {
+        if (!settingsObj) {
+            try {
+                settingsObj = await API.request("getSettings") || {};
+            } catch (e) {
+                console.error("Failed to load settings in applyRolePermissions", e);
+                settingsObj = {};
+            }
+        }
+
+        const isSuperUser = (role === 'CEO' || role === 'Admin');
+
+        // Defaults if not set
+        const defaultManagerFeatures = "pos,dashboard,bookings,customers,inventory,packages,suppliers,expenses,credits,refunds,reports";
+        const defaultStaffFeatures = "pos,bookings,customers,packages,credits";
+
+        let allowedFeaturesStr = "";
+        if (isSuperUser) {
+            allowedFeaturesStr = "pos,dashboard,bookings,customers,inventory,packages,suppliers,expenses,credits,refunds,reports,settings";
+        } else if (role === 'Manager') {
+            allowedFeaturesStr = settingsObj['AllowedFeatures_Manager'] !== undefined ? settingsObj['AllowedFeatures_Manager'] : defaultManagerFeatures;
+        } else if (role === 'Staff') {
+            allowedFeaturesStr = settingsObj['AllowedFeatures_Staff'] !== undefined ? settingsObj['AllowedFeatures_Staff'] : defaultStaffFeatures;
+        } else {
+            const customKey = `AllowedFeatures_${role}`;
+            allowedFeaturesStr = settingsObj[customKey] !== undefined ? settingsObj[customKey] : defaultStaffFeatures;
+        }
+
+        const allowedFeatures = allowedFeaturesStr.split(',').map(f => f.trim().toLowerCase());
+
+        const btns = document.querySelectorAll('.nav-btn[data-target]');
+        let firstVisibleTarget = "";
+
+        btns.forEach(btn => {
+            const targetId = btn.getAttribute('data-target');
+            if (!targetId) return;
+
+            const isAllowed = isSuperUser || allowedFeatures.includes(targetId.toLowerCase());
+            if (isAllowed) {
+                btn.style.display = '';
+                if (!firstVisibleTarget) {
+                    firstVisibleTarget = targetId;
+                }
+            } else {
+                btn.style.display = 'none';
+            }
+        });
+
+        // Also check elements with [data-role] as fallback
         document.querySelectorAll('[data-role]').forEach(el => {
+            // If it's a sidebar nav-btn, we already handled it
+            if (el.classList.contains('nav-btn')) return;
             const allowedRoles = el.getAttribute('data-role').split(',').map(r => r.trim());
             if (!allowedRoles.includes(role)) {
                 el.style.display = 'none';
@@ -110,6 +160,14 @@ const UI = {
                 el.style.display = '';
             }
         });
+
+        // If the current active view button is hidden, switch to the first visible view
+        const activeBtn = document.querySelector('.nav-btn.active');
+        if (activeBtn && activeBtn.style.display === 'none') {
+            if (firstVisibleTarget) {
+                this.switchView(firstVisibleTarget);
+            }
+        }
     }
 };
 

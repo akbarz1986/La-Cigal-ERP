@@ -18,6 +18,7 @@ const Settings = {
     render() {
         this.renderUsers();
         this.renderSettings();
+        this.renderPermissions();
     },
 
     renderUsers() {
@@ -96,6 +97,103 @@ const Settings = {
             this.load();
         } catch (e) {
             UI.showToast("Failed to save settings: " + e.message, "error");
+        }
+    },
+
+    renderPermissions() {
+        const container = document.getElementById('permissionsForm');
+        if (!container) return;
+
+        const defaultManagerFeatures = "pos,dashboard,bookings,customers,inventory,packages,suppliers,expenses,credits,refunds,reports";
+        const defaultStaffFeatures = "pos,bookings,customers,packages,credits";
+
+        const managerFeatures = this.settings['AllowedFeatures_Manager'] !== undefined ? this.settings['AllowedFeatures_Manager'] : defaultManagerFeatures;
+        const staffFeatures = this.settings['AllowedFeatures_Staff'] !== undefined ? this.settings['AllowedFeatures_Staff'] : defaultStaffFeatures;
+
+        const managerList = managerFeatures.split(',').map(f => f.trim().toLowerCase());
+        const staffList = staffFeatures.split(',').map(f => f.trim().toLowerCase());
+
+        const features = [
+            { id: 'pos', name: 'Point of Sale (POS)', icon: 'fa-cash-register' },
+            { id: 'dashboard', name: 'Dashboard', icon: 'fa-chart-pie' },
+            { id: 'bookings', name: 'Bookings', icon: 'fa-calendar-alt' },
+            { id: 'customers', name: 'Customers', icon: 'fa-users' },
+            { id: 'inventory', name: 'Inventory', icon: 'fa-boxes' },
+            { id: 'packages', name: 'Packages', icon: 'fa-box-open' },
+            { id: 'suppliers', name: 'Suppliers', icon: 'fa-truck' },
+            { id: 'expenses', name: 'Expenses', icon: 'fa-receipt' },
+            { id: 'credits', name: 'Credits', icon: 'fa-credit-card' },
+            { id: 'refunds', name: 'Refunds', icon: 'fa-undo' },
+            { id: 'reports', name: 'Reports', icon: 'fa-chart-line' },
+            { id: 'settings', name: 'Settings', icon: 'fa-cog' }
+        ];
+
+        container.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; width: 100%;">
+                <!-- Manager Permissions Card -->
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: var(--shadow);">
+                    <h4 style="margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--primary-gold); font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-user-tie"></i> Manager Role Features
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        ${features.map(f => `
+                            <label style="display: flex; align-items: center; gap: 10px; font-weight: 500; cursor: pointer; color: var(--text-primary); font-size: 0.9rem;">
+                                <input type="checkbox" class="manager-feature-chk" value="${f.id}" ${managerList.includes(f.id) ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--primary-gold); cursor: pointer;">
+                                <span style="display: flex; align-items: center; gap: 8px;"><i class="fas ${f.icon}" style="color: var(--primary-gold); width: 16px;"></i> ${f.name}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Staff Permissions Card -->
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: var(--shadow);">
+                    <h4 style="margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: var(--primary-gold); font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-user"></i> Staff Role Features
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        ${features.map(f => `
+                            <label style="display: flex; align-items: center; gap: 10px; font-weight: 500; cursor: pointer; color: var(--text-primary); font-size: 0.9rem;">
+                                <input type="checkbox" class="staff-feature-chk" value="${f.id}" ${staffList.includes(f.id) ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--primary-gold); cursor: pointer;">
+                                <span style="display: flex; align-items: center; gap: 8px;"><i class="fas ${f.icon}" style="color: var(--primary-gold); width: 16px;"></i> ${f.name}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="Settings.savePermissions()">
+                    <i class="fas fa-save"></i> Save Permissions
+                </button>
+            </div>
+        `;
+    },
+
+    async savePermissions() {
+        const managerCheckboxes = document.querySelectorAll('.manager-feature-chk:checked');
+        const staffCheckboxes = document.querySelectorAll('.staff-feature-chk:checked');
+
+        const managerFeatures = Array.from(managerCheckboxes).map(cb => cb.value).join(',');
+        const staffFeatures = Array.from(staffCheckboxes).map(cb => cb.value).join(',');
+
+        const updates = [
+            { key: 'AllowedFeatures_Manager', value: managerFeatures },
+            { key: 'AllowedFeatures_Staff', value: staffFeatures }
+        ];
+
+        try {
+            await Promise.all(updates.map(u => API.request("updateSetting", u)));
+            UI.showToast("Permissions saved successfully!");
+            
+            // Re-apply for currently logged in user immediately if they are affected
+            if (Auth.currentUser) {
+                const settingsList = await API.request("getSettings") || {};
+                await UI.applyRolePermissions(Auth.currentUser.Role, settingsList);
+            }
+            
+            this.load();
+        } catch (e) {
+            UI.showToast("Failed to save permissions: " + e.message, "error");
         }
     },
 
