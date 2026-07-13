@@ -1,3 +1,21 @@
+// Add this at the very top of your api/request.js
+export default async function handler(req, res) {
+    if (req.method !== 'POST') return res.status(405).end();
+    
+    const { action, payload, user, gasUrl } = req.body;
+    
+    // Forward the request to your Google Apps Script URL
+    const response = await fetch(gasUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, payload, user })
+    });
+    
+    const data = await response.json();
+    return res.status(200).json(data);
+}
+
+
 const API = {
     async request(action, payload = {}) {
         try {
